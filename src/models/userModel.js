@@ -1,4 +1,6 @@
 // Example user model (assuming you'll use a database later)
+const db = require('../database');
+
 class User {
   constructor(id, name, email) {
     this.id = id;
