@@ -1,4 +1,4 @@
-const db = require('./database');
+const db = require('./database/database');
 
 // Create a table
 db.run(`CREATE TABLE IF NOT EXISTS users (
