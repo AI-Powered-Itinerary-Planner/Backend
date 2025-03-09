@@ -2,7 +2,6 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-{
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
@@ -11,14 +10,10 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/AI-Powered-Itinerary-Planner/Backend.git"
-  }
-}
-
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-{
   "bugs": {
     "url": "https://github.com/AI-Powered-Itinerary-Planner/Backend/issues"
   },
@@ -28,12 +23,10 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "morgan": "^1.10.0",
+    "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"
-  }
-}
-
   }
 }

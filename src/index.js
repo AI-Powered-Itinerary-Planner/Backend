@@ -2,7 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
-
+const db = require('./database/database.js');
 //* Models
 const User = require('./models/userModel');
 
@@ -27,6 +27,20 @@ app.get("/", (req, res) => {
 
 //* Add routes here
 app.use('/users', userRoutes);
+
+
+// initiziazing database 
+db.initializeTables()
+  .then(success =>{
+    if(success){
+      console.log('Database Ready')
+    }
+    else{
+      console.error('database initization failed ')
+    }
+  }
+
+);
 
 // Server Listening
 const PORT = process.env.PORT || 5000;

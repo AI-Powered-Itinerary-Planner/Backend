@@ -10,4 +10,76 @@ const db = new sqlite3.Database(dbPath, (err) => {
   }
 });
 
+// If you want to initialize the tables, you can create a separate function
+db.initializeTables = async function() {
+  try {
+    // Users table
+    await this.promiseRun(`CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    // Itineraries table
+    await this.promiseRun(`CREATE TABLE IF NOT EXISTS itineraries (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      title TEXT NOT NULL,
+      start_date DATE NOT NULL,
+      end_date DATE NOT NULL,
+      destination TEXT NOT NULL,
+      description TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )`);
+
+    console.log('Database tables initialized successfully');
+    return true;
+  } catch (error) {
+    console.error('Error initializing tables:', error.message);
+    return false;
+  }
+};
+
+// Helper for promises
+db.promiseRun = function(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    this.run(sql, params, function(err) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve({ lastID: this.lastID, changes: this.changes });
+      }
+    });
+  });
+};
+
+db.promiseGet = function(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    this.get(sql, params, (err, row) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(row);
+      }
+    });
+  });
+};
+
+db.promiseAll = function(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    this.all(sql, params, (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+};
+
 module.exports = db;
