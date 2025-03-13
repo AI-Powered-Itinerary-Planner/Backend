@@ -11,7 +11,7 @@ const db = new sqlite3.Database('database.sqlite', (err) => {
         db.run(`CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT,
-            email TEXT,
+            email TEXT UNIQUE,
             password TEXT
         )`);
 
@@ -26,6 +26,24 @@ const db = new sqlite3.Database('database.sqlite', (err) => {
             FOREIGN KEY (user_id) REFERENCES users(id)
         )`);
     }
+});
+
+app.use(express.json());
+
+app.post('/register', (req, res) => {
+    const { name, email, password } = req.body;
+    
+    db.run(`INSERT INTO users (name, email, password) VALUES (?, ?, ?)`, [name, email, password], (err) => {
+        if (err) {
+        res.status(400).send(err.message);
+        } else if (!name || !email || !password) {
+        res.status(400).send('Please provide all required fields');
+        }
+        else {
+        res.status(201).send('User registered successfully');
+        }
+    });
+
 });
 
 
