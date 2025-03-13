@@ -52,6 +52,24 @@ router.post('/', async (req, res) => {
   }
 });
 
+router.post('/login', async (req, res) => {
+   try{
+      const{email, password} = req.body;
+      console.log(email,password);
+      const user = await User.getByEmail(email);
+      console.log(user);
+      if(!user){
+         return res.status(404).json({error: true, message: 'User not found'});
+      }
+      if(user.password !== password){
+         return res.status(401).json({error: true, message: 'Invalid password'});
+      }
+      res.status(200).json({success: 'true', message: 'Login successful', user});
+   }catch(error){
+      res.status(500).json({error: true, message: error.message});
+   }
+});
+
 // Update a user
 router.put('/:id', async (req, res) => {
   try {

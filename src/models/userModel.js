@@ -46,6 +46,19 @@ static async getById(id) {
   }
 }
 
+// Get user by Email
+static async getByEmail(email) {
+  try {
+    return await db.promiseGet(
+      'SELECT id, name, email, password, created_at FROM users WHERE email = ?',
+      [email]
+    );
+  } catch (error) {
+    console.error(`Error getting user with email ${email}:`, error.message);
+    throw error;
+  }
+}
+
 // Update a user
 static async update(id, userData) {
   try {
