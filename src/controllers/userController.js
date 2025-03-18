@@ -54,8 +54,8 @@ exports.createUser = async (req, res) => {
 // Update a user
 exports.updateUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-    const user = await User.update(req.params.id, { name, email, password });
+    const { name, email, password, interests } = req.body;
+    const user = await User.update(req.params.id, { name, email, password, interests });
     res.status(200).json(user);
   } catch (error) {
     if (error.message === 'User not found') {
@@ -73,6 +73,19 @@ exports.deleteUser = async (req, res) => {
   try {
     await User.delete(req.params.id);
     res.status(204).send();
+  } catch (error) {
+    if (error.message === 'User not found') {
+      return res.status(404).json({ error: true, message: 'User not found' });
+    }
+    res.status(500).json({ error: true, message: error.message });
+  }
+};
+
+// Get user's interests by ID
+exports.getUserInterestsById = async (req, res) => {
+  try {
+    const interests = await User.getInterestsById(req.params.id);
+    res.status(200).json({ interests });
   } catch (error) {
     if (error.message === 'User not found') {
       return res.status(404).json({ error: true, message: 'User not found' });

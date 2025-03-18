@@ -1,22 +1,23 @@
 // Example user model (assuming you'll use a database later)
 const db = require('../database/database.js');
 class User {
-  constructor(id, name, email,password) {
+  constructor(id, name, email, password, interests = '') {
     this.id = id;
     this.name = name;
     this.email = email;
     this.password
+    this.interests = interests;
   }
 
 // Create a new user
 static async create(userData) {
   try {
-    const { name, email, password } = userData;
+    const { name, email, password, interests = '' } = userData;
     const result = await db.promiseRun(
-      'INSERT INTO users (name, email, password) VALUES (?, ?, ?)',
-      [name, email, password]
+      'INSERT INTO users (name, email, password, interests) VALUES (?, ?, ?, ?)',
+      [name, email, password, interests]
     );
-    return { id: result.lastID, name, email };
+    return { id: result.lastID, name, email, interests };
   } catch (error) {
     console.error('Error creating user:', error.message);
     throw error;
@@ -59,10 +60,27 @@ static async getByEmail(email) {
   }
 }
 
+// Get user's interests by ID
+static async getInterestsById(id) {
+  try {
+    const result = await db.promiseGet(
+      'SELECT interests FROM users WHERE id = ?',
+      [id]
+    );
+    if (!result) {
+      throw new Error('User not found');
+    }
+    return result.interests;
+  } catch (error) {
+    console.error(`Error getting interests for user with ID ${id}:`, error.message);
+    throw error;
+  }
+}
+
 // Update a user
 static async update(id, userData) {
   try {
-    const { name, email, password } = userData;
+    const { name, email, password, interests } = userData;
     const updates = [];
     const values = [];
 
@@ -79,6 +97,11 @@ static async update(id, userData) {
     if (password) {
       updates.push('password = ?');
       values.push(password);
+    }
+
+    if (interests) {
+      updates.push('interests = ?');
+      values.push(interests);
     }
 
     if (updates.length === 0) {

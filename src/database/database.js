@@ -19,6 +19,7 @@ db.initializeTables = async function() {
       name TEXT NOT NULL,
       email TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
+      interests TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
@@ -42,6 +43,23 @@ db.initializeTables = async function() {
   } catch (error) {
     console.error('Error initializing tables:', error.message);
     return false;
+  }
+};
+
+// Function to alter the users table and add the interests column
+db.alterTable = async function() {
+  try {
+    await this.promiseRun(`ALTER TABLE users ADD COLUMN interests TEXT`);
+    console.log('Interests column added successfully');
+    return true;
+  } catch (error) {
+    if (error.message.includes('duplicate column name')) {
+      console.log('Interests column already exists');
+      return true;
+    } else {
+      console.error('Error altering table:', error.message);
+      return false;
+    }
   }
 };
 

@@ -73,8 +73,8 @@ router.post('/login', async (req, res) => {
 // Update a user
 router.put('/:id', async (req, res) => {
   try {
-     const { name, email, password } = req.body;
-     const user = await User.update(req.params.id, { name, email, password });
+     const { name, email, password, interests } = req.body;
+     const user = await User.update(req.params.id, { name, email, password, interests });
      res.status(200).json(user);
   } catch (error) {
      if (error.message === 'User not found') {
@@ -99,4 +99,18 @@ router.delete('/:id', async (req, res) => {
      res.status(500).json({ error: true, message: error.message });
   }
 });
+
+// Get user's interests by ID
+router.get('/:id/interests', async (req, res) => {
+   try {
+     const interests = await User.getInterestsById(req.params.id);
+     res.status(200).json({ interests });
+   } catch (error) {
+     if (error.message === 'User not found') {
+       return res.status(404).json({ error: true, message: 'User not found' });
+     }
+     res.status(500).json({ error: true, message: error.message });
+   }
+ });
+
 module.exports = router;

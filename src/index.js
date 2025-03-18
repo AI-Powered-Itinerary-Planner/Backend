@@ -16,10 +16,6 @@ app.use(express.json()); // Parses JSON requests
 app.use(cors()); // Enables CORS
 app.use(morgan("dev")); // Logs requests
 
-
-//* Initialize database
-// ex: User.createTable();
-
 // Health check route
 app.get("/", (req, res) => {
   res.send("Backend is running");
@@ -34,6 +30,7 @@ db.initializeTables()
   .then(success =>{
     if(success){
       console.log('Database Ready')
+      return db.alterTable();
     }
     else{
       console.error('database initization failed ')
