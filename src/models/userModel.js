@@ -27,7 +27,7 @@ static async create(userData) {
 // Get all users
 static async getAll() {
   try {
-    return await db.promiseAll('SELECT id, name, email, created_at FROM users');
+    return await db.promiseAll('SELECT id, name, email FROM users');
   } catch (error) {
     console.error('Error getting all users:', error.message);
     throw error;
@@ -38,7 +38,7 @@ static async getAll() {
 static async getById(id) {
   try {
     return await db.promiseGet(
-      'SELECT id, name, email, created_at FROM users WHERE id = ?',
+      'SELECT id, name, email FROM users WHERE id = ?',
       [id]
     );
   } catch (error) {
@@ -51,11 +51,61 @@ static async getById(id) {
 static async getByEmail(email) {
   try {
     return await db.promiseGet(
-      'SELECT id, name, email, password, created_at FROM users WHERE email = ?',
+      'SELECT id, name, email, password FROM users WHERE email = ?',
       [email]
     );
   } catch (error) {
     console.error(`Error getting user with email ${email}:`, error.message);
+    throw error;
+  }
+}
+
+// Create or update user from Google OAuth
+static async createOrUpdateFromGoogle(userData) {
+  try {
+    const { name, email, sub } = userData;
+    
+    // Check if user exists
+    const existingUser = await this.getByEmail(email);
+    
+    if (existingUser) {
+      // User exists, update their information if needed
+      // We might want to update the name if it changed in Google
+      await db.promiseRun(
+        'UPDATE users SET name = ? WHERE email = ?',
+        [name, email]
+      );
+      
+      // Get the updated user
+      return await this.getByEmail(email);
+    } else {
+      // Create new user
+      try {
+        const result = await db.promiseRun(
+          'INSERT INTO users (name, email, password, auth_provider, auth_id) VALUES (?, ?, ?, ?, ?)',
+          [name, email, `google_${sub}`, 'google', sub]
+        );
+        
+        return { 
+          id: result.lastID, 
+          name, 
+          email, 
+          auth_provider: 'google',
+          auth_id: sub
+        };
+      } catch (insertError) {
+        console.error('Error inserting new user:', insertError);
+        // Check if it's a constraint violation (e.g., unique email)
+        if (insertError.message.includes('UNIQUE constraint failed')) {
+          // Try to get the user one more time in case of race condition
+          const user = await this.getByEmail(email);
+          if (user) return user;
+        }
+        throw insertError;
+      }
+    }
+  } catch (error) {
+    console.error('Error creating/updating user from Google:', error.message);
     throw error;
   }
 }
@@ -108,7 +158,6 @@ static async update(id, userData) {
       throw new Error('No updates provided');
     }
 
-    updates.push('updated_at = CURRENT_TIMESTAMP');
     values.push(id);
 
     const result = await db.promiseRun(
@@ -142,4 +191,4 @@ static async delete(id) {
 }
 }
 
-module.exports = User; 
+module.exports = User;

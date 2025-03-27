@@ -1,7 +1,7 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
-const dbPath = path.resolve(__dirname, 'database.sqlite');
+const dbPath = path.resolve(__dirname, '../../database.sqlite');
 const db = new sqlite3.Database(dbPath, (err) => {
   if (err) {
     console.error('Error opening database', err.message);
@@ -13,7 +13,25 @@ const db = new sqlite3.Database(dbPath, (err) => {
 // Initialize tables without users data now 
 db.initializeTables = async function() {
   try {
-    // Connecting itineraries with user_id from oath 
+    // Drop and recreate users table to fix schema issues
+    console.log('Dropping users table if exists...');
+    await this.promiseRun(`DROP TABLE IF EXISTS users`);
+    
+    // Create users table
+    console.log('Creating users table with correct schema...');
+    await this.promiseRun(`CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT,
+      interests TEXT,
+      auth_provider TEXT,
+      auth_id TEXT
+    )`);
+    console.log('Users table created with correct schema');
+    
+    // Itineraries table with auth_id
+    console.log('Creating itineraries table if not exists...');
     await this.promiseRun(`CREATE TABLE IF NOT EXISTS itineraries (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       auth_id TEXT NOT NULL, 
@@ -21,22 +39,9 @@ db.initializeTables = async function() {
       start_date DATE NOT NULL,
       end_date DATE NOT NULL,
       destination TEXT NOT NULL,
-      description TEXT,
+      description TEXT
     )`);
-
-    // Itineraries table
-    await this.promiseRun(`CREATE TABLE IF NOT EXISTS itineraries (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      title TEXT NOT NULL,
-      start_date DATE NOT NULL,
-      end_date DATE NOT NULL,
-      destination TEXT NOT NULL,
-      description TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-    )`);
+    console.log('Itineraries table created or already exists');
 
     console.log('Database tables initialized successfully');
     return true;
