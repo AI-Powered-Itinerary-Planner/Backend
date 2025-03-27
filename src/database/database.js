@@ -10,18 +10,18 @@ const db = new sqlite3.Database(dbPath, (err) => {
   }
 });
 
-// If you want to initialize the tables, you can create a separate function
+// Initialize tables without users data now 
 db.initializeTables = async function() {
   try {
-    // Users table
-    await this.promiseRun(`CREATE TABLE IF NOT EXISTS users (
+    // Connecting itineraries with user_id from oath 
+    await this.promiseRun(`CREATE TABLE IF NOT EXISTS itineraries (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      interests TEXT,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      auth_id TEXT NOT NULL, 
+      title TEXT NOT NULL,
+      start_date DATE NOT NULL,
+      end_date DATE NOT NULL,
+      destination TEXT NOT NULL,
+      description TEXT,
     )`);
 
     // Itineraries table
