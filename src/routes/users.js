@@ -14,6 +14,21 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Check if email exists
+router.get('/check-email', async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: true, message: 'Email is required' });
+    }
+    
+    const user = await User.getByEmail(email);
+    res.status(200).json({ exists: !!user });
+  } catch (error) {
+    res.status(500).json({ error: true, message: error.message });
+  }
+});
+
 // Profile routes - protected by authentication
 // These must be placed before the /:id routes to avoid conflicts
 router.get('/profile', authMiddleware, userController.getProfile);
@@ -46,7 +61,16 @@ router.post('/', async (req, res) => {
      }
      
      const user = await User.create({ name, email, password });
-     res.status(201).json(user);
+     
+     // Generate a token for the new user
+     const token = 'user-token-' + Date.now(); // This should be replaced with proper JWT token generation
+     
+     res.status(201).json({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        token
+     });
   } catch (error) {
      // Check for unique constraint violation (email already exists)
      if (error.message.includes('UNIQUE constraint failed')) {
@@ -72,7 +96,16 @@ router.post('/login', async (req, res) => {
       if(user.password !== password){
          return res.status(401).json({error: true, message: 'Invalid password'});
       }
-      res.status(200).json({success: 'true', message: 'Login successful', user});
+      
+      // Generate a token for the logged in user
+      const token = 'user-token-' + Date.now(); // This should be replaced with proper JWT token generation
+      
+      res.status(200).json({
+         success: true, 
+         message: 'Login successful', 
+         user,
+         token
+      });
    }catch(error){
       res.status(500).json({error: true, message: error.message});
    }
