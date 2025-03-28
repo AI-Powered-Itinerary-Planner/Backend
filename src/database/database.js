@@ -26,7 +26,11 @@ db.initializeTables = async function() {
       password TEXT,
       interests TEXT,
       auth_provider TEXT,
-      auth_id TEXT
+      auth_id TEXT,
+      age INTEGER,
+      country TEXT,
+      zip_code TEXT,
+      preferred_currency TEXT
     )`);
     console.log('Users table created with correct schema');
     

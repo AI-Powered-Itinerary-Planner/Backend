@@ -6,7 +6,7 @@ const User = require('../models/userModel');
 router.post('/google', async (req, res) => {
   try {
     console.log('Received Google OAuth request:', req.body);
-    const { name, email, sub } = req.body;
+    const { name, email, sub, age, country, zip_code, preferred_currency } = req.body;
     
     if (!email || !sub) {
       console.log('Missing required fields:', { email, sub });
@@ -17,8 +17,16 @@ router.post('/google', async (req, res) => {
     }
     
     try {
-      // Create or update user with Google data
-      const user = await User.createOrUpdateFromGoogle({ name, email, sub });
+      // Create or update user with Google data and profile fields
+      const user = await User.createOrUpdateFromGoogle({ 
+        name, 
+        email, 
+        sub, 
+        age, 
+        country, 
+        zip_code, 
+        preferred_currency 
+      });
       console.log('User after createOrUpdateFromGoogle:', user);
       
       if (!user || !user.id) {
@@ -40,7 +48,11 @@ router.post('/google', async (req, res) => {
           id: user.id,
           name: user.name,
           email: user.email,
-          auth_provider: 'google'
+          auth_provider: 'google',
+          age: user.age,
+          country: user.country,
+          zip_code: user.zip_code,
+          preferred_currency: user.preferred_currency
         },
         token: sessionToken
       });

@@ -1,23 +1,27 @@
 // Example user model (assuming you'll use a database later)
 const db = require('../database/database.js');
 class User {
-  constructor(id, name, email, password, interests = '') {
+  constructor(id, name, email, password, interests = '', age = null, country = '', zip_code = '', preferred_currency = '') {
     this.id = id;
     this.name = name;
     this.email = email;
     this.password
     this.interests = interests;
+    this.age = age;
+    this.country = country;
+    this.zip_code = zip_code;
+    this.preferred_currency = preferred_currency;
   }
 
 // Create a new user
 static async create(userData) {
   try {
-    const { name, email, password, interests = '' } = userData;
+    const { name, email, password, interests = '', age = null, country = '', zip_code = '', preferred_currency = '' } = userData;
     const result = await db.promiseRun(
-      'INSERT INTO users (name, email, password, interests) VALUES (?, ?, ?, ?)',
-      [name, email, password, interests]
+      'INSERT INTO users (name, email, password, interests, age, country, zip_code, preferred_currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      [name, email, password, interests, age, country, zip_code, preferred_currency]
     );
-    return { id: result.lastID, name, email, interests };
+    return { id: result.lastID, name, email, interests, age, country, zip_code, preferred_currency };
   } catch (error) {
     console.error('Error creating user:', error.message);
     throw error;
@@ -27,7 +31,7 @@ static async create(userData) {
 // Get all users
 static async getAll() {
   try {
-    return await db.promiseAll('SELECT id, name, email FROM users');
+    return await db.promiseAll('SELECT id, name, email, age, country, zip_code, preferred_currency FROM users');
   } catch (error) {
     console.error('Error getting all users:', error.message);
     throw error;
@@ -38,7 +42,7 @@ static async getAll() {
 static async getById(id) {
   try {
     return await db.promiseGet(
-      'SELECT id, name, email FROM users WHERE id = ?',
+      'SELECT id, name, email, age, country, zip_code, preferred_currency FROM users WHERE id = ?',
       [id]
     );
   } catch (error) {
@@ -51,7 +55,7 @@ static async getById(id) {
 static async getByEmail(email) {
   try {
     return await db.promiseGet(
-      'SELECT id, name, email, password FROM users WHERE email = ?',
+      'SELECT id, name, email, password, age, country, zip_code, preferred_currency FROM users WHERE email = ?',
       [email]
     );
   } catch (error) {
@@ -63,7 +67,7 @@ static async getByEmail(email) {
 // Create or update user from Google OAuth
 static async createOrUpdateFromGoogle(userData) {
   try {
-    const { name, email, sub } = userData;
+    const { name, email, sub, age, country, zip_code, preferred_currency } = userData;
     
     // Check if user exists
     const existingUser = await this.getByEmail(email);
@@ -71,9 +75,37 @@ static async createOrUpdateFromGoogle(userData) {
     if (existingUser) {
       // User exists, update their information if needed
       // We might want to update the name if it changed in Google
+      // Also update any profile fields if provided
+      const updates = ['name = ?'];
+      const values = [name];
+      
+      // Add profile fields if they exist
+      if (age !== undefined) {
+        updates.push('age = ?');
+        values.push(age);
+      }
+      
+      if (country !== undefined) {
+        updates.push('country = ?');
+        values.push(country);
+      }
+      
+      if (zip_code !== undefined) {
+        updates.push('zip_code = ?');
+        values.push(zip_code);
+      }
+      
+      if (preferred_currency !== undefined) {
+        updates.push('preferred_currency = ?');
+        values.push(preferred_currency);
+      }
+      
+      // Add email as the last value for the WHERE clause
+      values.push(email);
+      
       await db.promiseRun(
-        'UPDATE users SET name = ? WHERE email = ?',
-        [name, email]
+        `UPDATE users SET ${updates.join(', ')} WHERE email = ?`,
+        values
       );
       
       // Get the updated user
@@ -82,8 +114,8 @@ static async createOrUpdateFromGoogle(userData) {
       // Create new user
       try {
         const result = await db.promiseRun(
-          'INSERT INTO users (name, email, password, auth_provider, auth_id) VALUES (?, ?, ?, ?, ?)',
-          [name, email, `google_${sub}`, 'google', sub]
+          'INSERT INTO users (name, email, password, auth_provider, auth_id, age, country, zip_code, preferred_currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+          [name, email, `google_${sub}`, 'google', sub, age || null, country || '', zip_code || '', preferred_currency || '']
         );
         
         return { 
@@ -91,7 +123,11 @@ static async createOrUpdateFromGoogle(userData) {
           name, 
           email, 
           auth_provider: 'google',
-          auth_id: sub
+          auth_id: sub,
+          age: age || null,
+          country: country || '',
+          zip_code: zip_code || '',
+          preferred_currency: preferred_currency || ''
         };
       } catch (insertError) {
         console.error('Error inserting new user:', insertError);
@@ -130,7 +166,7 @@ static async getInterestsById(id) {
 // Update a user
 static async update(id, userData) {
   try {
-    const { name, email, password, interests } = userData;
+    const { name, email, password, interests, age, country, zip_code, preferred_currency } = userData;
     const updates = [];
     const values = [];
 
@@ -152,6 +188,26 @@ static async update(id, userData) {
     if (interests) {
       updates.push('interests = ?');
       values.push(interests);
+    }
+    
+    if (age !== undefined) {
+      updates.push('age = ?');
+      values.push(age);
+    }
+    
+    if (country !== undefined) {
+      updates.push('country = ?');
+      values.push(country);
+    }
+    
+    if (zip_code !== undefined) {
+      updates.push('zip_code = ?');
+      values.push(zip_code);
+    }
+    
+    if (preferred_currency !== undefined) {
+      updates.push('preferred_currency = ?');
+      values.push(preferred_currency);
     }
 
     if (updates.length === 0) {

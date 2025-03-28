@@ -1,6 +1,9 @@
 const express = require('express');
 const User = require('../models/userModel');
+const userController = require('../controllers/userController');
+const authMiddleware = require('../middlewares/authMiddleware');
 const router = express.Router();
+
 // Get all users
 router.get('/', async (req, res) => {
   try {
@@ -10,6 +13,11 @@ router.get('/', async (req, res) => {
      res.status(500).json({ error: true, message: error.message });
   }
 });
+
+// Profile routes - protected by authentication
+// These must be placed before the /:id routes to avoid conflicts
+router.get('/profile', authMiddleware, userController.getProfile);
+router.put('/profile', authMiddleware, userController.updateProfile);
 
 // Get user by ID
 router.get('/:id', async (req, res) => {
