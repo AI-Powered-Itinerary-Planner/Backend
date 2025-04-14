@@ -114,8 +114,8 @@ router.post('/login', async (req, res) => {
 // Update a user
 router.put('/:id', async (req, res) => {
   try {
-     const { name, email, password, interests } = req.body;
-     const user = await User.update(req.params.id, { name, email, password, interests });
+     const { name, email, password, interests, age, country, zip_code, preferred_currency } = req.body;
+     const user = await User.update(req.params.id, { name, email, password, interests, age, country, zip_code, preferred_currency });
      res.status(200).json(user);
   } catch (error) {
      if (error.message === 'User not found') {

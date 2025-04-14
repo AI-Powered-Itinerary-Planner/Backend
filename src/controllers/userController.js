@@ -115,7 +115,7 @@ exports.getUserInterestsById = async (req, res) => {
 // Update user profile
 exports.updateProfile = async (req, res) => {
   try {
-    const { name, age, country, zip_code, preferred_currency } = req.body;
+    const { name, age, country, zip_code, preferred_currency, interests } = req.body;
     
     // Get the user ID from the authenticated user
     const userId = req.user.id;
@@ -126,7 +126,8 @@ exports.updateProfile = async (req, res) => {
       age, 
       country, 
       zip_code, 
-      preferred_currency 
+      preferred_currency,
+      interests
     });
     
     res.status(200).json({
