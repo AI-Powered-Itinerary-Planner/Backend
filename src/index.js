@@ -9,6 +9,7 @@ const User = require('./models/userModel');
 //* DB Routes
 const userRoutes = require('./routes/users');
 const authRoutes = require('./routes/auth');
+const itineraryRoutes = require('./routes/itineraries');
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.get("/test", (req, res) => {
 // Confirmed the backend routes configuration
 app.use('/users', userRoutes);
 app.use('/auth', authRoutes);
+app.use('/itineraries', itineraryRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
