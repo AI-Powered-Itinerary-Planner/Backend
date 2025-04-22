@@ -67,55 +67,26 @@ static async getByEmail(email) {
 // Create or update user from Google OAuth
 static async createOrUpdateFromGoogle(userData) {
   try {
-    const { name, email, sub, age, country, zip_code, preferred_currency } = userData;
+    const { name, email, sub } = userData;
     
     // Check if user exists
     const existingUser = await this.getByEmail(email);
     
     if (existingUser) {
-      // User exists, update their information if needed
-      // We might want to update the name if it changed in Google
-      // Also update any profile fields if provided
-      const updates = ['name = ?'];
-      const values = [name];
-      
-      // Add profile fields if they exist
-      if (age !== undefined) {
-        updates.push('age = ?');
-        values.push(age);
-      }
-      
-      if (country !== undefined) {
-        updates.push('country = ?');
-        values.push(country);
-      }
-      
-      if (zip_code !== undefined) {
-        updates.push('zip_code = ?');
-        values.push(zip_code);
-      }
-      
-      if (preferred_currency !== undefined) {
-        updates.push('preferred_currency = ?');
-        values.push(preferred_currency);
-      }
-      
-      // Add email as the last value for the WHERE clause
-      values.push(email);
-      
+      // User exists, just update their name if needed
       await db.promiseRun(
-        `UPDATE users SET ${updates.join(', ')} WHERE email = ?`,
-        values
+        `UPDATE users SET name = ? WHERE email = ?`,
+        [name, email]
       );
       
       // Get the updated user
       return await this.getByEmail(email);
     } else {
-      // Create new user
+      // Create new user - note we do not set a password
       try {
         const result = await db.promiseRun(
-          'INSERT INTO users (name, email, password, auth_provider, auth_id, age, country, zip_code, preferred_currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [name, email, `google_${sub}`, 'google', sub, age || null, country || '', zip_code || '', preferred_currency || '']
+          'INSERT INTO users (name, email, auth_provider, auth_id) VALUES (?, ?, ?, ?)',
+          [name, email, 'google', sub]
         );
         
         return { 
@@ -123,11 +94,7 @@ static async createOrUpdateFromGoogle(userData) {
           name, 
           email, 
           auth_provider: 'google',
-          auth_id: sub,
-          age: age || null,
-          country: country || '',
-          zip_code: zip_code || '',
-          preferred_currency: preferred_currency || ''
+          auth_id: sub
         };
       } catch (insertError) {
         console.error('Error inserting new user:', insertError);
