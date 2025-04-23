@@ -23,14 +23,22 @@ db.initializeTables = async function() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT,
       email TEXT UNIQUE NOT NULL,
-      password TEXT,
       interests TEXT,
       auth_provider TEXT,
       auth_id TEXT,
       age INTEGER,
       country TEXT,
       zip_code TEXT,
-      preferred_currency TEXT
+      preferred_currency TEXT,
+      preferred_travel_group TEXT,
+      preferred_accommodation TEXT,
+      preferred_transportation TEXT,
+      preferred_activities TEXT,
+      preferred_budget_range TEXT,
+      typical_travel_group_size INTEGER,
+      special_needs TEXT,
+      travel_companions_ages TEXT,
+      companion_interests TEXT
     )`);
     console.log('Users table created with correct schema');
     
@@ -43,7 +51,8 @@ db.initializeTables = async function() {
       start_date DATE NOT NULL,
       end_date DATE NOT NULL,
       destination TEXT NOT NULL,
-      description TEXT
+      description TEXT,
+      json_data TEXT NOT NULL
     )`);
     console.log('Itineraries table created or already exists');
 

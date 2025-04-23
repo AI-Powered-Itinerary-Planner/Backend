@@ -1,7 +1,7 @@
 const express = require('express');
 const User = require('../models/userModel');
 const userController = require('../controllers/userController');
-const authMiddleware = require('../middlewares/authMiddleware');
+const { authMiddleware } = require('../middlewares/authMiddleware');
 const router = express.Router();
 
 // Get all users

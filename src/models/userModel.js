@@ -1,11 +1,10 @@
 // Example user model (assuming you'll use a database later)
 const db = require('../database/database.js');
 class User {
-  constructor(id, name, email, password, interests = '', age = null, country = '', zip_code = '', preferred_currency = '') {
+  constructor(id, name, email, interests = '', age = null, country = '', zip_code = '', preferred_currency = '') {
     this.id = id;
     this.name = name;
     this.email = email;
-    this.password
     this.interests = interests;
     this.age = age;
     this.country = country;
@@ -16,10 +15,10 @@ class User {
 // Create a new user
 static async create(userData) {
   try {
-    const { name, email, password, interests = '', age = null, country = '', zip_code = '', preferred_currency = '' } = userData;
+    const { name, email, interests = '', age = null, country = '', zip_code = '', preferred_currency = '' } = userData;
     const result = await db.promiseRun(
-      'INSERT INTO users (name, email, password, interests, age, country, zip_code, preferred_currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [name, email, password, interests, age, country, zip_code, preferred_currency]
+      'INSERT INTO users (name, email, interests, age, country, zip_code, preferred_currency) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [name, email, interests, age, country, zip_code, preferred_currency]
     );
     return { id: result.lastID, name, email, interests, age, country, zip_code, preferred_currency };
   } catch (error) {
@@ -42,7 +41,11 @@ static async getAll() {
 static async getById(id) {
   try {
     return await db.promiseGet(
-      'SELECT id, name, email, age, country, zip_code, preferred_currency FROM users WHERE id = ?',
+      `SELECT id, name, email, age, country, zip_code, preferred_currency,
+        preferred_travel_group, preferred_accommodation, preferred_transportation,
+        preferred_activities, preferred_budget_range, typical_travel_group_size,
+        special_needs, travel_companions_ages, companion_interests, interests
+      FROM users WHERE id = ?`,
       [id]
     );
   } catch (error) {
@@ -55,7 +58,12 @@ static async getById(id) {
 static async getByEmail(email) {
   try {
     return await db.promiseGet(
-      'SELECT id, name, email, password, age, country, zip_code, preferred_currency FROM users WHERE email = ?',
+      `SELECT id, name, email, age, country, zip_code, preferred_currency,
+        preferred_travel_group, preferred_accommodation, preferred_transportation,
+        preferred_activities, preferred_budget_range, typical_travel_group_size,
+        special_needs, travel_companions_ages, companion_interests, interests,
+        auth_provider, auth_id
+      FROM users WHERE email = ?`,
       [email]
     );
   } catch (error) {
@@ -133,7 +141,26 @@ static async getInterestsById(id) {
 // Update a user
 static async update(id, userData) {
   try {
-    const { name, email, password, interests, age, country, zip_code, preferred_currency } = userData;
+    const { 
+      name, 
+      email, 
+      interests, 
+      age, 
+      country, 
+      zip_code, 
+      preferred_currency,
+      // New preference fields
+      preferred_travel_group,
+      preferred_accommodation,
+      preferred_transportation,
+      preferred_activities,
+      preferred_budget_range,
+      typical_travel_group_size,
+      special_needs,
+      travel_companions_ages,
+      companion_interests
+    } = userData;
+    
     const updates = [];
     const values = [];
 
@@ -145,11 +172,6 @@ static async update(id, userData) {
     if (email) {
       updates.push('email = ?');
       values.push(email);
-    }
-
-    if (password) {
-      updates.push('password = ?');
-      values.push(password);
     }
 
     if (interests) {
@@ -175,6 +197,52 @@ static async update(id, userData) {
     if (preferred_currency !== undefined) {
       updates.push('preferred_currency = ?');
       values.push(preferred_currency);
+    }
+    
+    // Handle new preference fields
+    if (preferred_travel_group !== undefined) {
+      updates.push('preferred_travel_group = ?');
+      values.push(preferred_travel_group);
+    }
+    
+    if (preferred_accommodation !== undefined) {
+      updates.push('preferred_accommodation = ?');
+      values.push(preferred_accommodation);
+    }
+    
+    if (preferred_transportation !== undefined) {
+      updates.push('preferred_transportation = ?');
+      values.push(preferred_transportation);
+    }
+    
+    if (preferred_activities !== undefined) {
+      updates.push('preferred_activities = ?');
+      values.push(preferred_activities);
+    }
+    
+    if (preferred_budget_range !== undefined) {
+      updates.push('preferred_budget_range = ?');
+      values.push(preferred_budget_range);
+    }
+    
+    if (typical_travel_group_size !== undefined) {
+      updates.push('typical_travel_group_size = ?');
+      values.push(typical_travel_group_size);
+    }
+    
+    if (special_needs !== undefined) {
+      updates.push('special_needs = ?');
+      values.push(special_needs);
+    }
+    
+    if (travel_companions_ages !== undefined) {
+      updates.push('travel_companions_ages = ?');
+      values.push(travel_companions_ages);
+    }
+    
+    if (companion_interests !== undefined) {
+      updates.push('companion_interests = ?');
+      values.push(companion_interests);
     }
 
     if (updates.length === 0) {

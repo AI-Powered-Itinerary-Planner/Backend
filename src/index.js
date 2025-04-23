@@ -9,6 +9,7 @@ const User = require('./models/userModel');
 //* DB Routes
 const userRoutes = require('./routes/users');
 const authRoutes = require('./routes/auth');
+const itineraryRoutes = require('./routes/itineraries');
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.get("/test", (req, res) => {
 // Confirmed the backend routes configuration
 app.use('/users', userRoutes);
 app.use('/auth', authRoutes);
+app.use('/itineraries', itineraryRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -66,7 +68,21 @@ db.initializeTables()
 );
 
 // Server Listening
-const PORT = process.env.PORT || 3001; 
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 3001;
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+// Handle server errors
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.log(`Port ${PORT} is already in use. Trying alternative port ${PORT + 1}`);
+    // Try to use the next port if the original one is in use
+    const alternativePort = PORT + 1;
+    app.listen(alternativePort, () => {
+      console.log(`Server running on alternative port ${alternativePort}`);
+    });
+  } else {
+    console.error('Server error:', error);
+  }
 });
