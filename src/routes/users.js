@@ -113,20 +113,49 @@ router.post('/login', async (req, res) => {
 
 // Update a user
 router.put('/:id', async (req, res) => {
-  try {
-     const { name, email, password, interests, age, country, zip_code, preferred_currency } = req.body;
-     const user = await User.update(req.params.id, { name, email, password, interests, age, country, zip_code, preferred_currency });
+   try {
+     const {
+       name, email, password, interests,
+       age, country, zip_code, preferred_currency,
+       preferred_travel_group,
+       preferred_accommodation, // 👈 usually an array
+       preferred_transportation,
+       preferred_activities,
+       preferred_budget_range,
+       typical_travel_group_size,
+       special_needs,
+       travel_companions_ages,
+       companion_interests
+     } = req.body;
+ 
+     const user = await User.update(req.params.id, {
+       name,
+       email,
+       password,
+       interests,
+       age,
+       country,
+       zip_code,
+       preferred_currency,
+       preferred_travel_group,
+       preferred_accommodation: Array.isArray(preferred_accommodation)
+         ? JSON.stringify(preferred_accommodation) : preferred_accommodation,
+       preferred_transportation: Array.isArray(preferred_transportation)
+         ? JSON.stringify(preferred_transportation) : preferred_transportation,
+       preferred_activities: Array.isArray(preferred_activities)
+         ? JSON.stringify(preferred_activities) : preferred_activities,
+       preferred_budget_range,
+       typical_travel_group_size,
+       special_needs,
+       travel_companions_ages,
+       companion_interests
+     });
+ 
      res.status(200).json(user);
-  } catch (error) {
-     if (error.message === 'User not found') {
-        return res.status(404).json({ error: true, message: 'User not found' });
-     }
-     if (error.message === 'No updates provided') {
-        return res.status(400).json({ error: true, message: 'No updates provided' });
-     }
+   } catch (error) {
      res.status(500).json({ error: true, message: error.message });
-  }
-});
+   }
+ });
 
 // Delete a user
 router.delete('/:id', async (req, res) => {

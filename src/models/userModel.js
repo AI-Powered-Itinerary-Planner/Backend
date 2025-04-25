@@ -160,9 +160,19 @@ static async update(id, userData) {
       travel_companions_ages,
       companion_interests
     } = userData;
+    console.log("Updating user with data:", userData); 
     
     const updates = [];
     const values = [];
+
+    if (preferred_accommodation !== undefined) {
+      updates.push('preferred_accommodation = ?');
+      values.push(
+        Array.isArray(preferred_accommodation)
+          ? JSON.stringify(preferred_accommodation)
+          : preferred_accommodation
+      );
+    }
 
     if (name) {
       updates.push('name = ?');
@@ -261,6 +271,7 @@ static async update(id, userData) {
     }
 
     return await this.getById(id);
+
   } catch (error) {
     console.error(`Error updating user with ID ${id}:`, error.message);
     throw error;
