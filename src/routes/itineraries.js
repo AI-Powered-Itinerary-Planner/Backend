@@ -4,6 +4,8 @@ const Itinerary = require('../models/itineraryModel');
 const { authenticateJWT } = require('../middlewares/authMiddleware');
 
 
+
+
 router.post('/generate', async (req, res) => {
   const { prompt } = req.body;
   console.log("Received prompt:", prompt);
@@ -65,12 +67,13 @@ router.post('/converse', async (req, res) => {
 });
 
 // Create a new itinerary
-router.post('/', authenticateJWT, async (req, res) => {
+router.post('/', async (req, res) => {
   try {
-    const { title, start_date, end_date, destination, description, json_data } = req.body;
+    const { auth_id, title, start_date, end_date, destination, description, json_data } = req.body;
+    console.log('Received itinerary data:', req.body);
     
     // Get auth_id from the authenticated user
-    const auth_id = req.user.sub || req.user.auth_id;
+    console.log('Authenticated user ID:', auth_id);
     
     // Validate required fields
     if (!title || !start_date || !end_date || !destination || !json_data) {
@@ -98,10 +101,10 @@ router.post('/', authenticateJWT, async (req, res) => {
 });
 
 // Get all itineraries for the authenticated user
-router.get('/', authenticateJWT, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const auth_id = req.user.sub || req.user.auth_id;
-    const itineraries = await Itinerary.getAllByUser(auth_id);
+    const { userId } = req.query;
+    const itineraries = await Itinerary.getAllByUser(userId);
     
     // Parse JSON data before sending response
     const parsedItineraries = itineraries.map(itinerary => {
@@ -123,18 +126,12 @@ router.get('/', authenticateJWT, async (req, res) => {
 });
 
 // Get a specific itinerary by ID
-router.get('/:id', authenticateJWT, async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const itinerary = await Itinerary.getById(req.params.id);
     
     if (!itinerary) {
       return res.status(404).json({ success: false, message: 'Itinerary not found' });
-    }
-    
-    // Verify ownership
-    const auth_id = req.user.sub || req.user.auth_id;
-    if (itinerary.auth_id !== auth_id) {
-      return res.status(403).json({ success: false, message: 'Unauthorized: This itinerary belongs to another user' });
     }
     
     // Parse JSON data
