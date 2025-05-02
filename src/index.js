@@ -10,6 +10,7 @@ const User = require('./models/userModel');
 const userRoutes = require('./routes/users');
 const authRoutes = require('./routes/auth');
 const itineraryRoutes = require('./routes/itineraries');
+const exploreRoutes = require('./routes/explore');
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.get("/test", (req, res) => {
 app.use('/users', userRoutes);
 app.use('/auth', authRoutes);
 app.use('/itineraries', itineraryRoutes);
+app.use('/explore', exploreRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
