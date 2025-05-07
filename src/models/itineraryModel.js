@@ -149,6 +149,17 @@ class Itinerary {
       throw error;
     }
   }
+
+// Delete all itineraries for a given user
+static async deleteByUserId(auth_id) {
+  try {
+    const result = await db.promiseRun('DELETE FROM itineraries WHERE auth_id = ?', [auth_id]);
+    return { success: true, message: `${result.changes} itineraries deleted for user ${auth_id}` };
+  } catch (error) {
+    console.error(`Error deleting itineraries for user ${auth_id}:`, error.message);
+    throw error;
+  }
+}
 }
 
 module.exports = Itinerary;

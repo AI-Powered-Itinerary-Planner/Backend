@@ -182,7 +182,7 @@ router.put('/:id', authenticateJWT, async (req, res) => {
 });
 
 // Delete an itinerary
-router.delete('/:id', authenticateJWT, async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
     // First fetch the itinerary to verify ownership
     const itinerary = await Itinerary.getById(req.params.id);
@@ -191,17 +191,22 @@ router.delete('/:id', authenticateJWT, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Itinerary not found' });
     }
     
-    // Verify ownership
-    const auth_id = req.user.sub || req.user.auth_id;
-    if (itinerary.auth_id !== auth_id) {
-      return res.status(403).json({ success: false, message: 'Unauthorized: This itinerary belongs to another user' });
-    }
-    
     // Proceed with deletion
     const result = await Itinerary.delete(req.params.id);
     res.json(result);
   } catch (error) {
     console.error(`Error deleting itinerary ${req.params.id}:`, error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// DELETE all itineraries by user auth_id
+router.delete('/user/:auth_id', async (req, res) => {
+  try {
+    const result = await Itinerary.deleteByUserId(req.params.auth_id);
+    res.json(result);
+  } catch (error) {
+    console.error(`Error deleting itineraries for user ${req.params.auth_id}:`, error);
     res.status(500).json({ success: false, message: error.message });
   }
 });
